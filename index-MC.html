@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2c2f36">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="apple-touch-icon" href="icon-192.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Casio fx-100MS Web Pro</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+    
+    body { 
+      background-color: #1a1a1a; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 100vh; 
+      padding: 10px;
+    }
+
+    .calculator {
+      background: #2c2f36;
+      width: 100%;
+      max-width: 390px;
+      border-radius: 20px;
+      padding: 15px 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 2px 5px rgba(255,255,255,0.1);
+      border: 2px solid #3f434d;
+    }
+
+    .brand-area {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      color: #d1d5db;
+      font-weight: bold;
+      font-style: italic;
+      margin-bottom: 5px;
+      padding: 0 5px;
+    }
+    .brand-name { font-size: 16px; letter-spacing: 1px; }
+    .brand-model { font-size: 10px; }
+    
+    .display {
+      background: #9ea89a;
+      width: 100%;
+      height: 70px;
+      border-radius: 5px;
+      margin-bottom: 25px;
+      padding: 5px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 4px solid #1f2228;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    .display-top { display: flex; justify-content: space-between; font-size: 10px; color: #3a4038; font-weight: bold; letter-spacing: 1px; }
+    .display-main { 
+      font-size: 26px; 
+      text-align: right; 
+      color: #1a1c19; 
+      font-family: 'Courier New', Courier, monospace; 
+      font-weight: bold;
+      white-space: nowrap;
+      letter-spacing: 1px;
+      overflow-x: auto;
+      line-height: 1.2;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      row-gap: 18px;
+    }
+
+    .btn {
+      background: #4b5563;
+      border: none;
+      border-radius: 5px;
+      height: 38px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 3px #1f2937, 0 4px 5px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.05s;
+    }
+    
+    .btn:active { transform: translateY(2px); box-shadow: 0 1px #1f2937; }
+
+    .btn .top-text {
+      position: absolute;
+      top: -14px;
+      font-size: 8px;
+      color: #d1d5db;
+      font-weight: normal;
+      white-space: nowrap;
+    }
+    .btn .top-text.shift { color: #fbbf24; }
+    .btn .top-text.alpha { color: #ef4444; }
+
+    .btn .main-text { font-size: 15px; }
+    .btn .bottom-text { font-size: 8px; font-weight: normal; opacity: 0.8; margin-top: 1px; }
+
+    .btn-dark { background: #374151; }
+    .btn-red { background: #dc2626; color: #fff; }
+    .btn-orange { background: #ea580c; color: #fff; }
+    
+    .replay-wrapper { display: flex; justify-content: center; align-items: center; }
+    .replay-btn {
+      width: 54px;
+      height: 54px;
+      background: #e5e7eb;
+      border-radius: 50%;
+      border: 3px solid #9ca3af;
+      box-shadow: 0 4px #9ca3af;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      color: #4b5563;
+      margin-top: -8px;
+      margin-bottom: -8px;
+    }
+    .replay-btn:active { transform: translateY(3px); box-shadow: none; }
+
+    .indicator { opacity: 0.1; transition: 0.2s; }
+    .indicator.active { opacity: 1; }
+
+    .history-btn {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background: #1f2937;
+      color: #9ca3af;
+      border: 1px solid #374151;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="calculator">
+    <div class="brand-area">
+      <div class="brand-name">CASIO</div>
+      <div class="brand-model">SCIENTIFIC CALCULATOR fx-100MS</div>
+    </div>
+    <div style="text-align:center; color:#06b6d4; font-weight:900; font-size:13px; margin-bottom:10px; letter-spacing:2px;">S-V.P.A.M</div>
+
+    <div class="display">
+      <div class="display-top">
+        <span id="shiftIndicator" class="indicator">SHIFT</span>
+        <span id="alphaIndicator" class="indicator">ALPHA</span>
+        <span id="memIndicator" class="indicator">M</span>
+      </div>
+      <div class="display-main" id="screen">0</div>
+    </div>
+
+    <div class="keypad">
+      <!-- Row 1 -->
+      <button class="btn btn-dark" onclick="toggleShift()"><span class="top-text shift">SHIFT</span><span class="main-text" style="font-size:11px; color:#fbbf24;">SHIFT</span></button>
+      <button class="btn btn-dark" onclick="toggleAlpha()"><span class="top-text alpha">ALPHA</span><span class="main-text" style="font-size:11px; color:#ef4444;">ALPHA</span></button>
+      <div class="replay-wrapper">
+        <button class="replay-btn" onclick="replay()">↺</button>
+      </div>
+      <button class="btn btn-dark" onclick="press('MODE')"><span class="top-text">MODE</span><span class="main-text" style="font-size:11px;">MODE</span></button>
+      <button class="btn btn-dark" onclick="press('ON')"><span class="top-text">CLR</span><span class="main-text" style="font-size:11px;">ON</span></button>
+
+      <!-- Row 2 -->
+      <button class="btn" onclick="press('CALC')"><span class="top-text shift">SOLVE</span><span class="main-text" style="font-size:10px;">CALC</span><span class="bottom-text">d/dx</span></button>
+      <button class="btn" onclick="press('∫dx')"><span class="top-text shift">∫dx</span><span class="main-text"></span></button>
+      <button class="btn" onclick="press('x⁻¹')"><span class="top-text shift">x!</span><span class="main-text">x⁻¹</span><span class="bottom-text">x³</span></button>
+      <button class="btn" onclick="press('log')"><span class="top-text">10^x</span><span class="main-text" style="font-size:13px;">log</span><span class="bottom-text">HEX</span></button>
+      <button class="btn" onclick="press('ln')"><span class="top-text">e^x</span><span class="main-text" style="font-size:13px;">ln</span><span class="bottom-text">OCT</span></button>
+
+      <!-- Row 3 -->
+      <button class="btn" onclick="press('a b/c')"><span class="top-text">a b/c</span><span class="main-text" style="font-size:11px;">a b/c</span></button>
+      <button class="btn" onclick="press('√')"><span class="top-text">∛</span><span class="main-text">√</span><span class="bottom-text">x²</span></button>
+      <button class="btn" onclick="press('x²')"><span class="top-text">x³</span><span class="main-text">x²</span><span class="bottom-text">^</span></button>
+      <button class="btn" onclick="press('^')"><span class="top-text">x√</span><span class="main-text">^</span></button>
+      <button class="btn" onclick="press('(-)')"><span class="top-text">A</span><span class="main-text" style="font-size:13px;">(-)</span><span class="bottom-text">hyp</span></button>
+
+      <!-- Row 4 -->
+      <button class="btn" onclick="press('sin')"><span class="top-text shift">sin⁻¹</span><span class="main-text">sin</span><span class="bottom-text">D</span></button>
+      <button class="btn" onclick="press('cos')"><span class="top-text shift">cos⁻¹</span><span class="main-text">cos</span><span class="bottom-text">R</span></button>
+      <button class="btn" onclick="press('tan')"><span class="top-text shift">tan⁻¹</span><span class="main-text">tan</span><span class="bottom-text">G</span></button>
+      <button class="btn" onclick="press('RCL')"><span class="top-text">STO</span><span class="main-text" style="font-size:11px;">RCL</span></button>
+      <button class="btn" onclick="press('ENG')"><span class="top-text">ENG</span><span class="main-text" style="font-size:11px;">ENG</span><span class="bottom-text">←</span></button>
+
+      <!-- Row 5 -->
+      <button class="btn" onclick="press('(')"><span class="top-text alpha">[</span><span class="main-text">(</span><span class="bottom-text">M</span></button>
+      <button class="btn" onclick="press(')')"><span class="top-text alpha">]</span><span class="main-text">)</span><span class="bottom-text">T</span></button>
+      <button class="btn" onclick="press(',')"><span class="top-text">X</span><span class="main-text">,</span><span class="bottom-text">INS</span></button>
+      <button class="btn" onclick="press('M+')"><span class="top-text">M-</span><span class="main-text" style="font-size:11px;">M+</span></button>
+      <button class="btn btn-red" onclick="press('DEL')"><span class="top-text">OFF</span><span class="main-text" style="font-size:12px;">DEL</span></button>
+
+      <!-- Row 6 -->
+      <button class="btn btn-dark" onclick="press('7')"><span class="top-text">MAT</span><span class="main-text">7</span></button>
+      <button class="btn btn-dark" onclick="press('8')"><span class="top-text">VCT</span><span class="main-text">8</span></button>
+      <button class="btn btn-dark" onclick="press('9')"><span class="top-text">m</span><span class="main-text">9</span></button>
+      <button class="btn btn-red" onclick="press('AC')"><span class="main-text" style="font-size:13px;">AC</span></button>
+      <button class="btn" onclick="press('nPr')"><span class="top-text">nPr</span><span class="main-text" style="font-size:11px;">nPr</span><span class="bottom-text">nCr</span></button>
+
+      <!-- Row 7 -->
+      <button class="btn btn-dark" onclick="press('4')"><span class="top-text">S-SUM</span><span class="main-text">4</span></button>
+      <button class="btn btn-dark" onclick="press('5')"><span class="top-text">S-VAR</span><span class="main-text">5</span></button>
+      <button class="btn btn-dark" onclick="press('6')"><span class="top-text">DISTR</span><span class="main-text">6</span></button>
+      <button class="btn" onclick="press('×')"><span class="main-text">×</span></button>
+      <button class="btn" onclick="press('÷')"><span class="main-text">÷</span></button>
+
+      <!-- Row 8 -->
+      <button class="btn btn-dark" onclick="press('1')"><span class="top-text">Rnd</span><span class="main-text">1</span></button>
+      <button class="btn btn-dark" onclick="press('2')"><span class="top-text">Ran#</span><span class="main-text">2</span></button>
+      <button class="btn btn-dark" onclick="press('3')"><span class="top-text">π</span><span class="main-text">3</span></button>
+      <button class="btn" onclick="press('+')"><span class="main-text">+</span></button>
+      <button class="btn" onclick="press('-')"><span class="main-text">-</span></button>
+
+      <!-- Row 9 -->
+      <button class="btn btn-dark" onclick="press('0')"><span class="main-text">0</span></button>
+      <button class="btn btn-dark" onclick="press('.')"><span class="main-text">.</span></button>
+      <button class="btn btn-dark" onclick="press('EXP')"><span class="main-text" style="font-size:11px;">EXP</span></button>
+      <button class="btn btn-dark" onclick="press('Ans')"><span class="main-text" style="font-size:11px;">Ans</span></button>
+      <button class="btn btn-orange" onclick="calculate()"><span class="main-text">=</span></button>
+    </div>
+    
+    <button class="history-btn" onclick="showHistory()">View History</button>
+  </div>
+
+  <script>
+    let currentInput = "";
+    let isShiftActive = false;
+    let isAlphaActive = false;
+    let lastAnswer = 0;
+    let history = [];
+    let displayMessageTimeout = null; // মেসেজ দেখানোর টাইমার
+
+    const screen = document.getElementById("screen");
+    const shiftIndicator = document.getElementById("shiftIndicator");
+    const alphaIndicator = document.getElementById("alphaIndicator");
+
+    function updateScreen(forceText = null) {
+      if (forceText !== null) {
+        screen.innerText = forceText;
+        return;
+      }
+      if (currentInput === "") screen.innerText = "0";
+      else screen.innerText = currentInput;
+    }
+
+    // ডিসপ্লেতে সাময়িক মেসেজ দেখানোর ফাংশন (alert এর বদলে)
+    function showDisplayMessage(msg, duration = 2000) {
+      if (displayMessageTimeout) clearTimeout(displayMessageTimeout);
+      screen.innerText = msg;
+      screen.style.fontSize = "20px"; // মেসেজ দেখানোর সময় ফন্ট ছোট হবে
+      
+      displayMessageTimeout = setTimeout(() => {
+        screen.style.fontSize = "26px"; // আগের সাইজে ফিরে আসবে
+        updateScreen();
+      }, duration);
+    }
+
+    function toggleShift() {
+      isShiftActive = !isShiftActive;
+      isAlphaActive = false;
+      shiftIndicator.classList.toggle("active", isShiftActive);
+      alphaIndicator.classList.remove("active");
+    }
+
+    function toggleAlpha() {
+      isAlphaActive = !isAlphaActive;
+      isShiftActive = false;
+      alphaIndicator.classList.toggle("active", isAlphaActive);
+      shiftIndicator.classList.remove("active");
+    }
+
+    function press(val) {
+      // ১. SHIFT লজিক
+      if (isShiftActive) {
+        if (val === 'x⁻¹') val = '!';
+        else if (val === 'log') val = '10^(';
+        else if (val === 'ln') val = 'e^(';
+        else if (val === '√') val = 'cbrt(';
+        else if (val === 'x²') val = '^3';
+        else if (val === 'sin') val = 'asin(';
+        else if (val === 'cos') val = 'acos(';
+        else if (val === 'tan') val = 'atan(';
+        else if (val === '∫dx') { showDisplayMessage("∫dx Selected"); isShiftActive = false; shiftIndicator.classList.remove("active"); return; }
+        else if (val === 'M+') val = 'M-';
+        else if (val === 'DEL') { onOff(); return; }
+        else if (val === 'CALC') { showDisplayMessage("SOLVE Mode"); isShiftActive = false; shiftIndicator.classList.remove("active"); return; }
+        
+        isShiftActive = false;
+        shiftIndicator.classList.remove("active");
+      } 
+      // ২. ALPHA লজিক
+      else if (isAlphaActive) {
+        if (val === '(') val = '[';
+        else if (val === ')') val = ']';
+        else if (val === '(-)') val = 'A';
+        
+        isAlphaActive = false;
+        alphaIndicator.classList.remove("active");
+      }
+      // ৩. নরমাল লজিক
+      else {
+        if (['sin', 'cos', 'tan', 'log', 'ln', '√', 'a b/c'].includes(val)) val = val + '(';
+      }
+
+      // স্পেশাল বাটন
+      if (val === 'AC' || val === 'ON') {
+        currentInput = "";
+        updateScreen();
+        return;
+      }
+      if (val === 'DEL') {
+        currentInput = currentInput.slice(0, -1);
+        updateScreen();
+        return;
+      }
+      if (val === 'Ans') {
+        currentInput += lastAnswer;
+        updateScreen();
+        return;
+      }
+      if (val === 'EXP') {
+        currentInput += '×10^';
+        updateScreen();
+        return;
+      }
+      
+      // পপ-আপ এর বদলে ডিসপ্লে মেসেজ
+      if (val === 'MODE') { showDisplayMessage("STAT  VERIF"); return; }
+      if (val === 'CALC') { showDisplayMessage("CALC MEM"); return; }
+      if (val === 'S-SUM' || val === 'S-VAR' || val === 'DISTR' || val === 'MAT' || val === 'VCT') { showDisplayMessage(val + " Mode"); return; }
+      
+      // nPr (Permutation)
+      if (val === 'nPr') {
+        currentInput += 'P';
+        updateScreen();
+        return;
+      }
+      
+      // পাই (π)
+      if (val === 'π') {
+        currentInput += Math.PI.toFixed(8);
+        updateScreen();
+        return;
+      }
+
+      if (val === 'RCL') { currentInput += 'M'; updateScreen(); return; }
+
+      currentInput += val;
+      updateScreen();
+    }
+
+    function calculate() {
+      try {
+        let evalString = currentInput;
+        evalString = evalString.replace(/×/g, '*').replace(/÷/g, '/');
+
+        evalString = evalString.replace(/sin\(/g, 'Math.sin((Math.PI/180)*');
+        evalString = evalString.replace(/cos\(/g, 'Math.cos((Math.PI/180)*');
+        evalString = evalString.replace(/tan\(/g, 'Math.tan((Math.PI/180)*');
+        
+        evalString = evalString.replace(/asin\(/g, '(180/Math.PI)*Math.asin(');
+        evalString = evalString.replace(/acos\(/g, '(180/Math.PI)*Math.acos(');
+        evalString = evalString.replace(/atan\(/g, '(180/Math.PI)*Math.atan(');
+        
+        evalString = evalString.replace(/log\(/g, 'Math.log10(');
+        evalString = evalString.replace(/ln\(/g, 'Math.log(');
+        evalString = evalString.replace(/√\(/g, 'Math.sqrt(');
+        evalString = evalString.replace(/cbrt\(/g, 'Math.cbrt(');
+        evalString = evalString.replace(/10\^\(/g, 'Math.pow(10, ');
+        evalString = evalString.replace(/e\^\(/g, 'Math.exp(');
+        evalString = evalString.replace(/\^/g, '**');
+
+        evalString = evalString.replace(/(\d+)!/g, (match, p1) => {
+          let num = parseInt(p1);
+          let res = 1;
+          for (let i = 2; i <= num; i++) res *= i;
+          return res;
+        });
+
+        evalString = evalString.replace(/%/g, '/100');
+
+        evalString = evalString.replace(/(\d+)P(\d+)/g, (match, n, r) => {
+          let num = parseInt(n), rNum = parseInt(r);
+          let factN = 1, factNR = 1;
+          for(let i=2; i<=num; i++) factN *= i;
+          for(let i=2; i<=(num-rNum); i++) factNR *= i;
+          return factN / factNR;
+        });
+
+        let result = eval(evalString);
+        
+        if (!isFinite(result) || isNaN(result)) {
+          showDisplayMessage("Math ERROR");
+          currentInput = "";
+          return;
+        }
+
+        if (result > 1e10 || (result < 1e-6 && result > 0)) {
+          result = result.toExponential(6);
+        } else {
+          result = parseFloat(result.toFixed(8)).toString();
+        }
+
+        history.push(`${currentInput} = ${result}`);
+        lastAnswer = result;
+        screen.innerText = result;
+        currentInput = result;
+
+      } catch (error) {
+        showDisplayMessage("Syntax ERROR");
+        currentInput = "";
+      }
+    }
+
+    function onOff() {
+      currentInput = "";
+      lastAnswer = 0;
+      isShiftActive = false;
+      isAlphaActive = false;
+      shiftIndicator.classList.remove("active");
+      alphaIndicator.classList.remove("active");
+      screen.style.fontSize = "26px";
+      updateScreen();
+    }
+
+    function replay() {
+      showDisplayMessage("Replay ◀ ▶");
+    }
+
+    function showHistory() {
+      if (history.length === 0) {
+        showDisplayMessage("No History", 1500);
+      } else {
+        // শেষ ২টা হিস্ট্রি ডিসপ্লেতে দেখাবে
+        let lastTwo = history.slice(-2).join(" | ");
+        showDisplayMessage(lastTwo, 3000);
+      }
+    }
+  </script>
+</body>
+</html>
