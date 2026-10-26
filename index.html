@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2c2f36">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<link rel="apple-touch-icon" href="icon-192.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Casio fx-100MS Web Pro</title>
+  <title>Casio fx-100MS Web</title>
+  
+  <!-- PWA Configurations -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#2c2f36">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
     
@@ -247,7 +250,7 @@
     let isAlphaActive = false;
     let lastAnswer = 0;
     let history = [];
-    let displayMessageTimeout = null; // মেসেজ দেখানোর টাইমার
+    let displayMessageTimeout = null;
 
     const screen = document.getElementById("screen");
     const shiftIndicator = document.getElementById("shiftIndicator");
@@ -262,14 +265,13 @@
       else screen.innerText = currentInput;
     }
 
-    // ডিসপ্লেতে সাময়িক মেসেজ দেখানোর ফাংশন (alert এর বদলে)
     function showDisplayMessage(msg, duration = 2000) {
       if (displayMessageTimeout) clearTimeout(displayMessageTimeout);
       screen.innerText = msg;
-      screen.style.fontSize = "20px"; // মেসেজ দেখানোর সময় ফন্ট ছোট হবে
+      screen.style.fontSize = "20px";
       
       displayMessageTimeout = setTimeout(() => {
-        screen.style.fontSize = "26px"; // আগের সাইজে ফিরে আসবে
+        screen.style.fontSize = "26px";
         updateScreen();
       }, duration);
     }
@@ -289,7 +291,6 @@
     }
 
     function press(val) {
-      // ১. SHIFT লজিক
       if (isShiftActive) {
         if (val === 'x⁻¹') val = '!';
         else if (val === 'log') val = '10^(';
@@ -307,7 +308,6 @@
         isShiftActive = false;
         shiftIndicator.classList.remove("active");
       } 
-      // ২. ALPHA লজিক
       else if (isAlphaActive) {
         if (val === '(') val = '[';
         else if (val === ')') val = ']';
@@ -316,12 +316,10 @@
         isAlphaActive = false;
         alphaIndicator.classList.remove("active");
       }
-      // ৩. নরমাল লজিক
       else {
         if (['sin', 'cos', 'tan', 'log', 'ln', '√', 'a b/c'].includes(val)) val = val + '(';
       }
 
-      // স্পেশাল বাটন
       if (val === 'AC' || val === 'ON') {
         currentInput = "";
         updateScreen();
@@ -343,19 +341,16 @@
         return;
       }
       
-      // পপ-আপ এর বদলে ডিসপ্লে মেসেজ
       if (val === 'MODE') { showDisplayMessage("STAT  VERIF"); return; }
       if (val === 'CALC') { showDisplayMessage("CALC MEM"); return; }
       if (val === 'S-SUM' || val === 'S-VAR' || val === 'DISTR' || val === 'MAT' || val === 'VCT') { showDisplayMessage(val + " Mode"); return; }
       
-      // nPr (Permutation)
       if (val === 'nPr') {
         currentInput += 'P';
         updateScreen();
         return;
       }
       
-      // পাই (π)
       if (val === 'π') {
         currentInput += Math.PI.toFixed(8);
         updateScreen();
@@ -450,10 +445,15 @@
       if (history.length === 0) {
         showDisplayMessage("No History", 1500);
       } else {
-        // শেষ ২টা হিস্ট্রি ডিসপ্লেতে দেখাবে
         let lastTwo = history.slice(-2).join(" | ");
         showDisplayMessage(lastTwo, 3000);
       }
+    }
+
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(() => console.log("Service Worker Registered Successfully"));
     }
   </script>
 </body>
