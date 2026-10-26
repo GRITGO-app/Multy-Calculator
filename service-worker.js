@@ -1,4 +1,4 @@
-const CACHE_NAME = 'casio-calc-v1';
+const CACHE_NAME = 'casio-calc-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -8,8 +8,21 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
+  self.skipWaiting(); // নতুন আপডেট দ্রুত লোড হওয়ার জন্য
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+  );
+});
+
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then((keyList) => {
+      return Promise.all(keyList.map((key) => {
+        if (key !== CACHE_NAME) {
+          return caches.delete(key); // পুরনো ক্যাশ ডিলিট
+        }
+      }));
+    })
   );
 });
 
